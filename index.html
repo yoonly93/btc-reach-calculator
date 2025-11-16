@@ -38,17 +38,15 @@
 
 <body class="bg-gray-100 p-6">
 
-  <!-- 쿠팡 광고 영역 (문구 + 광고) -->
-  <div class="flex flex-col items-center mb-6">
+  <div id="root"></div>
+
+  <!-- 계산기 아래 쿠팡 광고 영역 -->
+  <div class="flex flex-col items-center mt-6">
     <div class="text-center text-sm text-gray-500 mb-2">
       이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
     </div>
-    <div id="coupang-ad" class="flex justify-center">
-      <!-- 쿠팡 광고 스크립트가 로드되면 여기 표시 -->
-    </div>
+    <div id="coupang-ad" class="flex justify-center"></div>
   </div>
-
-  <div id="root"></div>
 
   <!-- React 코드 불러오기 -->
   <script type="text/babel" src="app.jsx"></script>
