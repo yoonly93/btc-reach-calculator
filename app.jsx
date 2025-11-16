@@ -35,7 +35,7 @@ function App() {
       return;
     }
 
-    const usdt = krw / bithumbRate * 0.9996; // 0.04% 수수료
+    const usdt = krw / bithumbRate * 0.9996; // 0.04% Bithumb 수수료
     const btc = usdt * 0.999 / okxRate;      // 0.10% OKX 수수료
     const finalBtc = Math.max(0, btc - 0.00001); // 출금 수수료
 
@@ -54,92 +54,114 @@ function App() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md space-y-6">
-      <h2 className="text-2xl font-bold text-center">BTC 도달량 계산기</h2>
+    <>
+      {/* 계산기 */}
+      <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md space-y-6 mt-8">
+        <h2 className="text-2xl font-bold text-center">BTC 도달량 계산기</h2>
 
-      {/* KRW 입력 */}
-      <div>
-        <label className="font-semibold text-gray-700">투입 원화</label>
-        <div className="flex gap-2 mt-2">
+        {/* KRW 입력 */}
+        <div>
+          <label className="font-semibold text-gray-700">투입 원화</label>
+          <div className="flex gap-2 mt-2">
+            <input
+              type="number"
+              value={krw}
+              onChange={(e) => setKrw(Number(e.target.value))}
+              className="flex-1 border px-3 py-2 rounded-md"
+            />
+            <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(100000)}>+10만</button>
+            <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(1000000)}>+100만</button>
+            <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(10000000)}>+1000만</button>
+          </div>
+        </div>
+
+        {/* 환율 자동 */}
+        <button
+          onClick={fetchRates}
+          className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+        >
+          실시간 환율 불러오기
+        </button>
+
+        {loading && <p className="text-center text-gray-600">환율 불러오는 중...</p>}
+
+        {/* Bithumb */}
+        <div>
+          <label className="font-semibold text-gray-700">Bithumb USDT/KRW</label>
           <input
             type="number"
-            value={krw}
-            onChange={(e) => setKrw(Number(e.target.value))}
-            className="flex-1 border px-3 py-2 rounded-md"
+            value={bithumbRate}
+            onChange={(e) => setBithumbRate(Number(e.target.value))}
+            className="w-full border px-3 py-2 rounded-md mt-1"
           />
-
-          <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(100000)}>+10만</button>
-          <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(1000000)}>+100만</button>
-          <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(10000000)}>+1000만</button>
         </div>
-      </div>
 
-      {/* 환율 자동 */}
-      <button
-        onClick={fetchRates}
-        className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
-      >
-        실시간 환율 불러오기
-      </button>
-
-      {loading && <p className="text-center text-gray-600">환율 불러오는 중...</p>}
-
-      {/* Bithumb */}
-      <div>
-        <label className="font-semibold text-gray-700">Bithumb USDT/KRW</label>
-        <input
-          type="number"
-          value={bithumbRate}
-          onChange={(e) => setBithumbRate(Number(e.target.value))}
-          className="w-full border px-3 py-2 rounded-md mt-1"
-        />
-      </div>
-
-      {/* OKX */}
-      <div>
-        <label className="font-semibold text-gray-700">OKX BTC/USDT</label>
-        <input
-          type="number"
-          value={okxRate}
-          onChange={(e) => setOkxRate(Number(e.target.value))}
-          className="w-full border px-3 py-2 rounded-md mt-1"
-        />
-      </div>
-
-      {/* 버튼 */}
-      <div className="space-y-3">
-        <button
-          onClick={calculate}
-          className="w-full py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700"
-        >
-          계산
-        </button>
-
-        <button
-          onClick={reset}
-          className="w-full py-3 bg-gray-300 text-black rounded-lg font-semibold hover:bg-gray-400"
-        >
-          초기화
-        </button>
-      </div>
-
-      {/* 결과 */}
-      {result && (
-        <div className="p-4 bg-gray-100 rounded-lg">
-          <p>구매 USDT: {result.usdt}</p>
-          <p>OKX 매수 사용 USDT: {result.btc}</p>
-          <p className="font-bold text-lg mt-2">
-            최종 도달 BTC: <span className="text-blue-600">{result.finalBtc}</span>
-          </p>
+        {/* OKX */}
+        <div>
+          <label className="font-semibold text-gray-700">OKX BTC/USDT</label>
+          <input
+            type="number"
+            value={okxRate}
+            onChange={(e) => setOkxRate(Number(e.target.value))}
+            className="w-full border px-3 py-2 rounded-md mt-1"
+          />
         </div>
-      )}
-    </div>
-    <div className="mt-8 p-4 bg-yellow-100 text-yellow-800 rounded text-sm text-center">
-  ⚠️ 계산한 내역은 저장되지 않습니다. 또한 계산 결과는 참고용이며, 실제 거래와 차이가 있을 수 있습니다.
-</div>
+
+        {/* 버튼 */}
+        <div className="space-y-3">
+          <button
+            onClick={calculate}
+            className="w-full py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700"
+          >
+            계산
+          </button>
+
+          <button
+            onClick={reset}
+            className="w-full py-3 bg-gray-300 text-black rounded-lg font-semibold hover:bg-gray-400"
+          >
+            초기화
+          </button>
+        </div>
+
+        {/* 결과 */}
+        {result && (
+          <div className="p-4 bg-gray-100 rounded-lg">
+            <p>구매 USDT: {result.usdt}</p>
+            <p>OKX 매수 사용 USDT: {result.btc}</p>
+            <p className="font-bold text-lg mt-2">
+              최종 도달 BTC: <span className="text-blue-600">{result.finalBtc}</span>
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* 주의사항 */}
+      <div className="mt-8 p-4 bg-yellow-100 text-yellow-800 rounded text-sm text-center max-w-md mx-auto">
+        ⚠️ 계산한 내역은 저장되지 않습니다. 또한 계산 결과는 참고용이며, 실제 거래와 차이가 있을 수 있습니다.
+      </div>
+
+      {/* 쿠팡 광고 */}
+      <div className="mt-4 text-center max-w-md mx-auto">
+        <div className="inline-block mb-2">
+          이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+        </div>
+        <script src="https://ads-partners.coupang.com/g.js"></script>
+        <script>
+          new PartnersCoupang.G({
+            id: 942164,
+            template: "carousel",
+            trackingCode: "AF1875970",
+            width: "680",
+            height: "140",
+            tsource: ""
+          });
+        </script>
+      </div>
+    </>
   );
 }
 
-// React 18 createRoot 사용
+// React 18 createRoot
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
