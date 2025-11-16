@@ -18,9 +18,29 @@
   <!-- 구글광고 -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4826107918413125"
      crossorigin="anonymous"></script>
+
+  <!-- 쿠팡 광고 -->
+  <script src="https://ads-partners.coupang.com/g.js"></script>
+  <script>
+    window.onload = function() {
+      new PartnersCoupang.G({
+        id: 942164,
+        trackingCode: "AF1875970",
+        subId: null,
+        template: "carousel",
+        width: "680",
+        height: "140"
+      });
+    }
+  </script>
 </head>
 
 <body class="bg-gray-100 p-6">
+  <!-- 쿠팡 안내 문구 -->
+  <div class="text-center text-sm text-gray-500 mb-4">
+    이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+  </div>
+
   <div id="root"></div>
 
   <!-- React 코드 불러오기 -->
