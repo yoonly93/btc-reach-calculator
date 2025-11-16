@@ -38,17 +38,39 @@
 
 <body class="bg-gray-100 p-6">
 
+  <!-- React 계산기 -->
   <div id="root"></div>
 
-  <!-- 계산기 아래 쿠팡 광고 영역 -->
-  <div class="flex flex-col items-center mt-6">
-    <div class="text-center text-sm text-gray-500 mb-2">
+  <!-- 계산기 아래 영역: 쿠팡 광고 + 안내문 + 주의사항 + 구글 광고 -->
+  <div class="mt-6 flex flex-col items-center space-y-4">
+
+    <!-- 쿠팡 안내문 -->
+    <div class="text-center text-sm text-gray-500">
       이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
     </div>
+
+    <!-- 쿠팡 광고 -->
     <div id="coupang-ad" class="flex justify-center"></div>
+
+    <!-- 주의사항 -->
+    <div class="p-4 bg-yellow-100 text-yellow-800 rounded text-sm text-center">
+      ⚠️ 계산한 내역은 저장되지 않습니다. 또한 계산 결과는 참고용이며, 실제 거래와 차이가 있을 수 있습니다.
+    </div>
+
+    <!-- 구글 광고 (예시: 반응형) -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-4826107918413125"
+         data-ad-slot="1234567890"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+
   </div>
 
-  <!-- React 코드 불러오기 -->
+  <!-- React 코드 -->
   <script type="text/babel" src="app.jsx"></script>
 </body>
 </html>
