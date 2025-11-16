@@ -4,52 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>BTC 도달량 계산기</title>
-
-  <!-- Tailwind -->
+  
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- React 18 -->
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-
-  <!-- Babel -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- React & ReactDOM CDN (React 18) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 </head>
+<body class="bg-gray-50">
 
-<body class="bg-gray-100 p-6">
   <div id="root"></div>
 
-  <div class="mt-8 p-4 bg-yellow-100 text-yellow-800 rounded text-sm text-center">
-  ⚠️ 계산한 내역은 저장되지 않습니다. 또한 계산 결과는 참고용이며, 실제 거래와 차이가 있을 수 있습니다.
-</div>
-  
- <!-- 쿠팡 광고 -->
-<div class="w-full flex flex-col items-center mt-6 mb-10">
-  <div class="text-sm text-gray-500 mb-2 text-center">
-    이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
-  </div>
-
-  <div id="coupang-ad" class="flex justify-center"></div>
-
-  <script src="https://ads-partners.coupang.com/g.js"></script>
-  <script>
-    new PartnersCoupang.G({
-      "id": 942164,
-      "template": "carousel",
-      "trackingCode": "AF1875970",
-      "width": "680",
-      "height": "140",
-      "tsource": ""
-    });
-  </script>
-</div>
-
-
-  <!-- 구글광고 -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4826107918413125"
-     crossorigin="anonymous"></script>
-
-  <!-- React 실행 -->
-  <script type="text/babel" src="app.jsx"></script>
+  <!-- App.jsx 불러오기 -->
+  <script type="module" src="app.jsx"></script>
 </body>
 </html>
