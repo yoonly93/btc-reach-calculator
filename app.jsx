@@ -49,22 +49,9 @@ function App() {
     setResult(null);
   };
 
-  // 쿠팡 광고 렌더링
-  React.useEffect(() => {
-    if (window.PartnersCoupang) {
-      new PartnersCoupang.G({
-        id: 942164,
-        template: "carousel",
-        trackingCode: "AF1875970",
-        width: "680",
-        height: "140",
-        tsource: ""
-      });
-    }
-  }, [result]);
-
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md space-y-6 mt-6">
+
       <h2 className="text-2xl font-bold text-center">BTC 도달량 계산기</h2>
 
       {/* KRW 입력 */}
@@ -138,14 +125,6 @@ function App() {
           </p>
         </div>
       )}
-
-      {/* 쿠팡 광고 */}
-      <div className="mt-6 text-center">
-        <div className="mb-2 text-sm text-gray-500">
-          이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
-        </div>
-        <div id="coupang-ad"></div>
-      </div>
 
       {/* 구글 광고 */}
       <div className="mt-6 text-center">
