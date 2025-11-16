@@ -9,35 +9,31 @@ function App() {
 
   const addAmount = (v) => setKrw((prev) => prev + v);
 
-  // 자동 환율 불러오기
   const fetchRates = async () => {
     setLoading(true);
     try {
       const bithumbRes = await fetch("https://api.bithumb.com/public/ticker/USDT_KRW");
       const bithumbData = await bithumbRes.json();
-      const usdtKrw = Number(bithumbData.data.closing_price);
-      setBithumbRate(usdtKrw);
+      setBithumbRate(Number(bithumbData.data.closing_price));
 
       const okxRes = await fetch("https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT");
       const okxData = await okxRes.json();
-      const btcUsdt = Number(okxData.data[0].last);
-      setOkxRate(btcUsdt);
-    } catch (e) {
+      setOkxRate(Number(okxData.data[0].last));
+    } catch {
       alert("환율을 불러오지 못했습니다. 수동 입력해주세요.");
     }
     setLoading(false);
   };
 
-  // 계산
   const calculate = () => {
     if (!bithumbRate || !okxRate) {
       alert("환율을 입력하거나 자동 불러오기를 눌러주세요.");
       return;
     }
 
-    const usdt = krw / bithumbRate * 0.9996; // 0.04% 수수료
-    const btc = usdt * 0.999 / okxRate;      // 0.10% OKX 수수료
-    const finalBtc = Math.max(0, btc - 0.00001); // 출금 수수료
+    const usdt = krw / bithumbRate * 0.9996;
+    const btc = usdt * 0.999 / okxRate;
+    const finalBtc = Math.max(0, btc - 0.00001);
 
     setResult({
       usdt: usdt.toFixed(8),
@@ -53,8 +49,22 @@ function App() {
     setResult(null);
   };
 
+  // 쿠팡 광고 렌더링
+  React.useEffect(() => {
+    if (window.PartnersCoupang) {
+      new PartnersCoupang.G({
+        id: 942164,
+        template: "carousel",
+        trackingCode: "AF1875970",
+        width: "680",
+        height: "140",
+        tsource: ""
+      });
+    }
+  }, [result]);
+
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md space-y-6">
+    <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md space-y-6 mt-6">
       <h2 className="text-2xl font-bold text-center">BTC 도달량 계산기</h2>
 
       {/* KRW 입력 */}
@@ -67,24 +77,22 @@ function App() {
             onChange={(e) => setKrw(Number(e.target.value))}
             className="flex-1 border px-3 py-2 rounded-md"
           />
-
           <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(100000)}>+10만</button>
           <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(1000000)}>+100만</button>
           <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(10000000)}>+1000만</button>
         </div>
       </div>
 
-      {/* 환율 자동 */}
+      {/* 자동 환율 */}
       <button
         onClick={fetchRates}
         className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
       >
         실시간 환율 불러오기
       </button>
-
       {loading && <p className="text-center text-gray-600">환율 불러오는 중...</p>}
 
-      {/* Bithumb */}
+      {/* 환율 입력 */}
       <div>
         <label className="font-semibold text-gray-700">Bithumb USDT/KRW</label>
         <input
@@ -94,8 +102,6 @@ function App() {
           className="w-full border px-3 py-2 rounded-md mt-1"
         />
       </div>
-
-      {/* OKX */}
       <div>
         <label className="font-semibold text-gray-700">OKX BTC/USDT</label>
         <input
@@ -106,7 +112,7 @@ function App() {
         />
       </div>
 
-      {/* 버튼 */}
+      {/* 계산 버튼 */}
       <div className="space-y-3">
         <button
           onClick={calculate}
@@ -114,7 +120,6 @@ function App() {
         >
           계산
         </button>
-
         <button
           onClick={reset}
           className="w-full py-3 bg-gray-300 text-black rounded-lg font-semibold hover:bg-gray-400"
@@ -133,10 +138,37 @@ function App() {
           </p>
         </div>
       )}
+
+      {/* 쿠팡 광고 */}
+      <div className="mt-6 text-center">
+        <div className="mb-2 text-sm text-gray-500">
+          이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+        </div>
+        <div id="coupang-ad"></div>
+      </div>
+
+      {/* 구글 광고 */}
+      <div className="mt-6 text-center">
+        <ins className="adsbygoogle"
+          style={{ display: "block" }}
+          data-ad-client="ca-pub-4826107918413125"
+          data-ad-slot="YOUR_AD_SLOT"
+          data-ad-format="auto"
+          data-full-width-responsive="true">
+        </ins>
+        <script>
+          (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+      </div>
+
+      {/* 주의사항 */}
+      <div className="mt-6 p-4 bg-yellow-100 text-yellow-800 rounded text-sm text-center">
+        ⚠️ 계산한 내역은 저장되지 않습니다. 또한 계산 결과는 참고용이며, 실제 거래와 차이가 있을 수 있습니다.
+      </div>
     </div>
   );
 }
 
-// React 18 createRoot 사용
+// React 18 createRoot
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
