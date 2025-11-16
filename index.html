@@ -18,8 +18,25 @@
 
 <body class="bg-gray-100 p-6">
   <div id="root"></div>
+  
+ <!-- 쿠팡 광고 -->
+  <div class="mt-4 text-sm text-gray-500">
+    이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+  </div>
 
-  <!-- 핵심: 반드시 text/babel -->
+  <script src="https://ads-partners.coupang.com/g.js"></script>
+  <script>
+    new PartnersCoupang.G({
+      "id": 942164,
+      "template": "carousel",
+      "trackingCode": "AF1875970",
+      "width": "680",
+      "height": "140",
+      "tsource": ""
+    });
+  </script>
+
+  <!-- React 실행 -->
   <script type="text/babel" src="app.jsx"></script>
 </body>
 </html>
