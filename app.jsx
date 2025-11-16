@@ -1,56 +1,48 @@
-import React, { useState } from "react";
-import ReactDOM from "react-dom";
+import React from "react";
+import ReactDOM from "react-dom/client";
 
-function CryptoFlowCalculator() {
-  const [krw, setKrw] = useState(2000000);
-  const [bithumbRate, setBithumbRate] = useState("");
-  const [okxRate, setOkxRate] = useState("");
-  const [result, setResult] = useState(null);
+function App() {
+  const [krw, setKrw] = React.useState(2000000);
+  const [bithumbRate, setBithumbRate] = React.useState("");
+  const [okxRate, setOkxRate] = React.useState("");
+  const [result, setResult] = React.useState(null);
+  const [loading, setLoading] = React.useState(false);
 
-  const addAmount = (amount) => setKrw((prev) => prev + amount);
+  const addAmount = (v) => setKrw((prev) => prev + v);
 
   const fetchRates = async () => {
+    setLoading(true);
     try {
-      const bithumbRes = await fetch("https://api.bithumb.com/public/ticker/USDT_KRW");
+      const bithumbRes = await fetch(
+        "https://api.bithumb.com/public/ticker/USDT_KRW"
+      );
       const bithumbData = await bithumbRes.json();
-      const usdtKrw = parseFloat(bithumbData.data.closing_price);
+      setBithumbRate(Number(bithumbData.data.closing_price));
 
-      const okxRes = await fetch("https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT");
+      const okxRes = await fetch(
+        "https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT"
+      );
       const okxData = await okxRes.json();
-      const btcUsdt = parseFloat(okxData.data[0].last);
-
-      setBithumbRate(usdtKrw);
-      setOkxRate(btcUsdt);
+      setOkxRate(Number(okxData.data[0].last));
     } catch {
-      alert("환율 불러오기 실패. 직접 입력해주세요.");
+      alert("환율을 불러오지 못했습니다. 직접 입력해주세요.");
     }
+    setLoading(false);
   };
 
   const calculate = () => {
     if (!bithumbRate || !okxRate) {
-      alert("환율을 입력하거나 자동으로 불러와 주세요.");
+      alert("환율을 입력하거나 자동 불러오기 버튼을 눌러주세요.");
       return;
     }
 
-    const krwValue = Number(krw);
-    const usdtRate = Number(bithumbRate);
-    const btcRate = Number(okxRate);
-
-    // 빗썸 0.04% 수수료
-    const usdtBeforeFee = krwValue / usdtRate;
-    const usdt = usdtBeforeFee * 0.9996;
-
-    // OKX 매수 0.10% 수수료
-    const usableUsdt = usdt * 0.999;
-    const btcBought = usableUsdt / btcRate;
-
-    // 출금 수수료
-    const finalBtc = btcBought - 0.00001;
+    const usdt = (krw / bithumbRate) * 0.9996;
+    const btc = (usdt * 0.999) / okxRate;
+    const finalBtc = Math.max(0, btc - 0.00001);
 
     setResult({
       usdt: usdt.toFixed(8),
-      usableUsdt: usableUsdt.toFixed(8),
-      btcBought: btcBought.toFixed(8),
+      btc: btc.toFixed(8),
       finalBtc: finalBtc.toFixed(8),
     });
   };
@@ -63,95 +55,95 @@ function CryptoFlowCalculator() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 mt-10 bg-white rounded-xl shadow-lg">
-      <h2 className="text-2xl font-bold text-center mb-6">BTC 도달량 계산기</h2>
+    <div className="max-w-md mx-auto p-6 font-sans">
+      <h2 className="text-2xl font-bold mb-6 text-center">BTC 도달량 계산기</h2>
 
       <div className="mb-4">
-        <label className="block mb-1 font-medium">투입 원화 (KRW)</label>
-        <div className="flex gap-2 mb-2">
+        <label className="block font-medium mb-1">투입 원화</label>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={krw}
+            onChange={(e) => setKrw(Number(e.target.value))}
+            className="flex-1 p-2 border rounded"
+          />
           <button
-            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
             onClick={() => addAmount(100000)}
+            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
           >
             +10만
           </button>
           <button
-            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
             onClick={() => addAmount(1000000)}
+            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
           >
             +100만
           </button>
           <button
-            className="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300"
             onClick={() => addAmount(10000000)}
+            className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
           >
             +1000만
           </button>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <button
+          onClick={fetchRates}
+          className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          실시간 환율 불러오기
+        </button>
+      </div>
+
+      {loading && <p className="text-blue-600 mb-4">환율 불러오는 중...</p>}
+
+      <div className="mb-4">
+        <label className="block font-medium mb-1">Bithumb USDT/KRW</label>
         <input
           type="number"
-          value={krw}
-          onChange={(e) => setKrw(Number(e.target.value))}
+          value={bithumbRate}
+          onChange={(e) => setBithumbRate(Number(e.target.value))}
           className="w-full p-2 border rounded"
         />
       </div>
 
-      <button
-        onClick={fetchRates}
-        className="w-full py-2 mb-4 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        실시간 환율 불러오기
-      </button>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-        <div>
-          <label className="block mb-1 font-medium">Bithumb USDT/KRW</label>
-          <input
-            type="number"
-            value={bithumbRate}
-            onChange={(e) => setBithumbRate(e.target.value)}
-            className="w-full p-2 border rounded"
-          />
-        </div>
-        <div>
-          <label className="block mb-1 font-medium">OKX BTC/USDT</label>
-          <input
-            type="number"
-            value={okxRate}
-            onChange={(e) => setOkxRate(e.target.value)}
-            className="w-full p-2 border rounded"
-          />
-        </div>
+      <div className="mb-4">
+        <label className="block font-medium mb-1">OKX BTC/USDT</label>
+        <input
+          type="number"
+          value={okxRate}
+          onChange={(e) => setOkxRate(Number(e.target.value))}
+          className="w-full p-2 border rounded"
+        />
       </div>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-col gap-2 mb-4">
         <button
           onClick={calculate}
-          className="flex-1 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          className="w-full py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700"
         >
           계산
         </button>
         <button
           onClick={reset}
-          className="flex-1 py-2 bg-gray-300 rounded hover:bg-gray-400"
+          className="w-full py-2 bg-gray-300 rounded hover:bg-gray-400"
         >
-          리셋
+          초기화
         </button>
       </div>
 
       {result && (
-        <div className="mt-4 p-4 bg-gray-50 rounded shadow-inner">
-          <h3 className="font-semibold mb-2">결과</h3>
-          <p>구매 USDT (김프 반영): {result.usdt}</p>
-          <p>OKX 매수 사용 USDT: {result.usdAfter}</p>
-          <p>구매된 BTC: {result.btcBought}</p>
-          <p className="font-bold text-green-700 text-lg">
-            최종 도달 BTC: {result.finalBtc}
-          </p>
+        <div className="p-4 bg-gray-50 rounded border">
+          <p>구매 USDT (김프 포함): <span className="font-medium">{result.usdt}</span></p>
+          <p>OKX 매수 사용 USDT: <span className="font-medium">{result.btc}</span></p>
+          <p className="text-lg mt-2">최종 도달 BTC (출금 후): <span className="font-bold text-green-700">{result.finalBtc}</span></p>
         </div>
       )}
     </div>
   );
 }
 
-ReactDOM.render(<CryptoFlowCalculator />, document.getElementById("root"));
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
