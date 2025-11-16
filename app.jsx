@@ -134,6 +134,9 @@ function App() {
         </div>
       )}
     </div>
+    <div className="mt-8 p-4 bg-yellow-100 text-yellow-800 rounded text-sm text-center">
+  ⚠️ 계산한 내역은 저장되지 않습니다. 또한 계산 결과는 참고용이며, 실제 거래와 차이가 있을 수 있습니다.
+</div>
   );
 }
 
