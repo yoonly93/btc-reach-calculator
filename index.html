@@ -1,43 +1,25 @@
 <!DOCTYPE html>
 <html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BTC 도달량 계산기</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-gray-50">
-    <!-- React 앱이 들어갈 root -->
-    <div id="root"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BTC 도달량 계산기</title>
 
-    <!-- 쿠팡 광고 -->
-    <div class="mt-6 flex justify-center">
-      <div>
-        <div class="text-center mb-2">
-          이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
-        </div>
-        <script src="https://ads-partners.coupang.com/g.js"></script>
-        <script>
-          new PartnersCoupang.G({
-            id: 942164,
-            template: "carousel",
-            trackingCode: "AF1875970",
-            width: "680",
-            height: "140",
-            tsource: ""
-          });
-        </script>
-      </div>
-    </div>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- 주의사항 -->
-    <div class="mt-8 p-4 bg-yellow-100 text-yellow-800 rounded text-sm text-center">
-      ⚠️ 계산한 내역은 저장되지 않습니다. 또한 계산 결과는 참고용이며, 실제 거래와 차이가 있을 수 있습니다.
-    </div>
+  <!-- React 18 -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-    <!-- React 앱 스크립트 -->
-    <script type="module" src="app.jsx"></script>
-  </body>
+  <!-- Babel -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+
+<body class="bg-gray-100 p-6">
+  <div id="root"></div>
+
+  <!-- 핵심: 반드시 text/babel -->
+  <script type="text/babel" src="app.jsx"></script>
+</body>
 </html>
