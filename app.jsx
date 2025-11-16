@@ -9,7 +9,6 @@ function App() {
 
   const addAmount = (v) => setKrw((prev) => prev + v);
 
-  // 자동 환율 불러오기
   const fetchRates = async () => {
     setLoading(true);
     try {
@@ -26,17 +25,14 @@ function App() {
     setLoading(false);
   };
 
-  // 계산
   const calculate = () => {
     if (!bithumbRate || !okxRate) {
       alert("환율을 입력하거나 자동 불러오기를 눌러주세요.");
       return;
     }
-
-    const usdt = krw / bithumbRate * 0.9996; // Bithumb 수수료 0.04%
-    const btc = usdt * 0.999 / okxRate;      // OKX 매수 수수료 0.10%
-    const finalBtc = Math.max(0, btc - 0.00001); // 출금 수수료
-
+    const usdt = krw / bithumbRate * 0.9996;
+    const btc = usdt * 0.999 / okxRate;
+    const finalBtc = Math.max(0, btc - 0.00001);
     setResult({
       usdt: usdt.toFixed(8),
       btc: btc.toFixed(8),
@@ -52,97 +48,91 @@ function App() {
   };
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
+    <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md space-y-4">
+      <h2 className="text-2xl font-bold text-center">BTC 도달량 계산기</h2>
 
-      {/* 계산기 카드 */}
-      <div className="bg-white p-6 rounded-xl shadow-md space-y-6">
-        <h2 className="text-2xl font-bold text-center">BTC 도달량 계산기</h2>
-
-        {/* KRW 입력 */}
-        <div>
-          <label className="font-semibold text-gray-700">투입 원화</label>
-          <div className="flex gap-2 mt-2">
-            <input
-              type="number"
-              value={krw}
-              onChange={(e) => setKrw(Number(e.target.value))}
-              className="flex-1 border px-3 py-2 rounded-md"
-            />
-            <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(100000)}>+10만</button>
-            <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(1000000)}>+100만</button>
-            <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(10000000)}>+1000만</button>
-          </div>
+      {/* KRW 입력 */}
+      <div>
+        <label className="font-semibold text-gray-700">투입 원화</label>
+        <div className="flex gap-2 mt-2">
+          <input
+            type="number"
+            value={krw}
+            onChange={(e) => setKrw(Number(e.target.value))}
+            className="flex-1 border px-3 py-2 rounded-md"
+          />
+          <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(100000)}>+10만</button>
+          <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(1000000)}>+100만</button>
+          <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(10000000)}>+1000만</button>
         </div>
+      </div>
 
-        {/* 환율 자동 */}
+      {/* 자동 환율 */}
+      <button
+        onClick={fetchRates}
+        className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+      >
+        실시간 환율 불러오기
+      </button>
+
+      {loading && <p className="text-center text-gray-600">환율 불러오는 중...</p>}
+
+      {/* 수동 입력 */}
+      <div>
+        <label className="font-semibold text-gray-700">Bithumb USDT/KRW</label>
+        <input
+          type="number"
+          value={bithumbRate}
+          onChange={(e) => setBithumbRate(Number(e.target.value))}
+          className="w-full border px-3 py-2 rounded-md mt-1"
+        />
+      </div>
+
+      <div>
+        <label className="font-semibold text-gray-700">OKX BTC/USDT</label>
+        <input
+          type="number"
+          value={okxRate}
+          onChange={(e) => setOkxRate(Number(e.target.value))}
+          className="w-full border px-3 py-2 rounded-md mt-1"
+        />
+      </div>
+
+      {/* 버튼 */}
+      <div className="space-y-2">
         <button
-          onClick={fetchRates}
-          className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+          onClick={calculate}
+          className="w-full py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700"
         >
-          실시간 환율 불러오기
+          계산
         </button>
+        <button
+          onClick={reset}
+          className="w-full py-3 bg-gray-300 text-black rounded-lg font-semibold hover:bg-gray-400"
+        >
+          초기화
+        </button>
+      </div>
 
-        {loading && <p className="text-center text-gray-600">환율 불러오는 중...</p>}
-
-        {/* Bithumb */}
-        <div>
-          <label className="font-semibold text-gray-700">Bithumb USDT/KRW</label>
-          <input
-            type="number"
-            value={bithumbRate}
-            onChange={(e) => setBithumbRate(Number(e.target.value))}
-            className="w-full border px-3 py-2 rounded-md mt-1"
-          />
+      {/* 결과 + 주의사항 */}
+      {result && (
+        <div className="p-4 bg-gray-100 rounded-lg space-y-2">
+          <p>구매 USDT: {result.usdt}</p>
+          <p>OKX 매수 사용 USDT: {result.btc}</p>
+          <p className="font-bold text-lg">
+            최종 도달 BTC: <span className="text-blue-600">{result.finalBtc}</span>
+          </p>
         </div>
+      )}
 
-        {/* OKX */}
-        <div>
-          <label className="font-semibold text-gray-700">OKX BTC/USDT</label>
-          <input
-            type="number"
-            value={okxRate}
-            onChange={(e) => setOkxRate(Number(e.target.value))}
-            className="w-full border px-3 py-2 rounded-md mt-1"
-          />
-        </div>
-
-        {/* 버튼 */}
-        <div className="space-y-3">
-          <button
-            onClick={calculate}
-            className="w-full py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700"
-          >
-            계산
-          </button>
-
-          <button
-            onClick={reset}
-            className="w-full py-3 bg-gray-300 text-black rounded-lg font-semibold hover:bg-gray-400"
-          >
-            초기화
-          </button>
-        </div>
-
-        {/* 결과 */}
-        {result && (
-          <div className="p-4 bg-gray-100 rounded-lg space-y-2">
-            <p>구매 USDT: {result.usdt}</p>
-            <p>OKX 매수 사용 USDT: {result.btc}</p>
-            <p className="font-bold text-lg mt-2">
-              최종 도달 BTC: <span className="text-blue-600">{result.finalBtc}</span>
-            </p>
-          </div>
-        )}
-
-        {/* 주의사항: 계산기 카드 안 */}
-        <div className="p-4 bg-yellow-100 text-yellow-800 rounded text-sm text-center">
-          ⚠️ 계산한 내역은 저장되지 않습니다. 또한 계산 결과는 참고용이며, 실제 거래와 차이가 있을 수 있습니다.
-        </div>
+      {/* 주의사항 카드 안 */}
+      <div className="p-4 bg-yellow-100 text-yellow-800 rounded text-sm text-center">
+        ⚠️ 계산한 내역은 저장되지 않습니다. 또한 계산 결과는 참고용이며, 실제 거래와 차이가 있을 수 있습니다.
       </div>
     </div>
   );
 }
 
-// React 18 createRoot 사용
+// React 18 createRoot
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
