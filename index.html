@@ -20,9 +20,12 @@
   <div id="root"></div>
   
  <!-- 쿠팡 광고 -->
-  <div class="mt-4 text-sm text-gray-500">
+<div class="w-full flex flex-col items-center mt-6 mb-10">
+  <div class="text-sm text-gray-500 mb-2 text-center">
     이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
   </div>
+
+  <div id="coupang-ad" class="flex justify-center"></div>
 
   <script src="https://ads-partners.coupang.com/g.js"></script>
   <script>
@@ -35,6 +38,8 @@
       "tsource": ""
     });
   </script>
+</div>
+
 
   <!-- 구글광고 -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4826107918413125"
