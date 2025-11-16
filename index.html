@@ -19,7 +19,7 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4826107918413125"
      crossorigin="anonymous"></script>
 
-  <!-- 쿠팡 광고 -->
+  <!-- 쿠팡 광고 스크립트 -->
   <script src="https://ads-partners.coupang.com/g.js"></script>
   <script>
     function loadCoupangAd() {
@@ -35,10 +35,9 @@
     window.onload = loadCoupangAd;
   </script>
 </head>
-
 <body class="bg-gray-100 p-6">
 
-  <!-- React 계산기 + 주의사항 카드 -->
+  <!-- React 계산기 -->
   <div id="root"></div>
 
   <!-- 계산기 아래 광고 영역 -->
@@ -46,7 +45,7 @@
 
     <!-- 구글 광고 (예시: 반응형) -->
     <ins class="adsbygoogle"
-         style="display:block; max-width:680px;"
+         style="display:block"
          data-ad-client="ca-pub-4826107918413125"
          data-ad-slot="1234567890"
          data-ad-format="auto"
@@ -55,9 +54,11 @@
       (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
 
-    <!-- 쿠팡 광고 묶음: 배너 + 안내문 -->
+    <!-- 쿠팡 광고 + 안내문 묶음 -->
     <div class="flex flex-col items-center space-y-2">
+      <!-- 쿠팡 배너 -->
       <div id="coupang-ad" class="flex justify-center"></div>
+      <!-- 쿠팡 안내문 -->
       <div class="text-center text-sm text-gray-500">
         이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
       </div>
