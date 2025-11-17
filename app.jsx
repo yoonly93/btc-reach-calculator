@@ -150,7 +150,7 @@ function App() {
       <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
         <h2 className="text-2xl font-bold text-center">BTC 도달량 계산기</h2>
 <p className="mt-2 text-center text-gray-600">
-  거래소에서 구입한 비트코인을 셀프커스터디 목적으로, 콜드월렛·개인지갑에 이체해 보관할 때 확보되는 최종 실제 수량을 계산합니다.
+  거래소에서 구입한 비트코인을 셀프커스터디 목적으로,<br />콜드월렛·개인지갑에 이체해 보관할 때 확보되는<br />최종 실제 수량을 계산합니다.
 </p>
 
         {/* 원화 입력 */}
@@ -243,7 +243,7 @@ function App() {
             <div>USDT (수수료 적용): <b>{formatNumber(result.steps.usdtAfterExchangeFee)}</b> USDT</div>
             <div>USDT (OKX/바이낸스 매수 후 사용 가능): <b>{formatNumber(result.steps.usdtAfterBuyFee)}</b> USDT</div>
             <div>구매된 BTC: <b>{formatNumber(result.steps.btcBought)}</b> BTC</div>
-            <div className="text-lg font-bold text-blue-600">최종 도달 BTC (출금 후): {formatNumber(result.steps.btcFinal)} BTC</div>
+            <div className="text-lg font-bold text-blue-600">최종 도달 비트코인 수량(출금 후): {formatNumber(result.steps.btcFinal)} BTC</div>
           </div>
         )}
 
