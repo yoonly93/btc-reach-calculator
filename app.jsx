@@ -155,18 +155,52 @@ function App() {
 
         {/* 원화 입력 */}
         <div>
-          <label className="font-medium text-gray-700">투입 원화 (KRW)</label>
-          <div className="flex gap-2 mt-2">
-            <input
-              type="number"
-              className="flex-1 border rounded px-3 py-2"
-              value={krwValue}
-              onChange={(e) => setKrwValue(Number(e.target.value))}
-            />
-            <button onClick={() => setKrwValue((v) => v + 100000)} className="px-3 py-2 bg-gray-100 rounded">+10만</button>
-            <button onClick={() => setKrwValue((v) => v + 1000000)} className="px-3 py-2 bg-gray-100 rounded">+100만</button>
-            <button onClick={() => setKrwValue((v) => v + 10000000)} className="px-3 py-2 bg-gray-100 rounded">+1000만</button>
-          </div>
+         <div>
+  <label className="font-medium text-gray-700">투입 원화 (KRW)</label>
+
+  {/* 입력창 */}
+  <input
+    type="number"
+    className="w-full border rounded px-3 py-2 mt-2"
+    value={krwValue}
+    onChange={(e) => setKrwValue(Number(e.target.value))}
+  />
+
+  {/* 버튼 3개 → 아래로 이동 */}
+  <div className="flex gap-2 mt-2">
+    <button
+      onClick={() => setKrwValue((v) => v + 100000)}
+      className="flex-1 px-3 py-2 bg-gray-100 rounded"
+    >
+      +10만
+    </button>
+    <button
+      onClick={() => setKrwValue((v) => v + 1000000)}
+      className="flex-1 px-3 py-2 bg-gray-100 rounded"
+    >
+      +100만
+    </button>
+    <button
+      onClick={() => setKrwValue((v) => v + 10000000)}
+      className="flex-1 px-3 py-2 bg-gray-100 rounded"
+    >
+      +1000만
+    </button>
+  </div>
+
+  {/* 한국어 금액 표기 */}
+  <div className="mt-1 text-xs text-gray-500">
+    {krwValue.toLocaleString()}원 · (
+    {(() => {
+      const v = krwValue;
+      if (v >= 100000000) return `${v / 100000000}억원`;
+      if (v >= 10000) return `${v / 10000}만원`;
+      return `${v}원`;
+    })()}
+    )
+  </div>
+</div>
+
         </div>
 
         {/* USDT/KRW 탭 */}
