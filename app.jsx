@@ -172,33 +172,33 @@ function App() {
       onClick={() => setKrwValue((v) => v + 100000)}
       className="flex-1 px-3 py-2 bg-gray-100 rounded"
     >
-      +10만
+      +10만원
     </button>
     <button
       onClick={() => setKrwValue((v) => v + 1000000)}
       className="flex-1 px-3 py-2 bg-gray-100 rounded"
     >
-      +100만
+      +100만원
     </button>
     <button
       onClick={() => setKrwValue((v) => v + 10000000)}
       className="flex-1 px-3 py-2 bg-gray-100 rounded"
     >
-      +1000만
+      +1000만원
     </button>
   </div>
 
+
   {/* 한국어 금액 표기 */}
-  <div className="mt-1 text-xs text-gray-500">
-    {krwValue.toLocaleString()}원 · (
-    {(() => {
-      const v = krwValue;
-      if (v >= 100000000) return `${v / 100000000}억원`;
-      if (v >= 10000) return `${v / 10000}만원`;
-      return `${v}원`;
-    })()}
-    )
-  </div>
+<div className="mt-1 text-xs text-gray-500">
+  {(() => {
+    const v = krwValue;
+    if (v >= 100000000) return `${v / 100000000}억원`;
+    if (v >= 10000) return `${v / 10000}만원`;
+    return `${v}원`;
+  })()}
+</div>
+
 </div>
 
         </div>
