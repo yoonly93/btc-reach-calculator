@@ -149,6 +149,9 @@ function App() {
       {/* 계산기 카드 */}
       <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
         <h2 className="text-2xl font-bold text-center">BTC 도달량 계산기</h2>
+<p className="mt-2 text-center text-gray-600">
+  거래소에서 구입한 비트코인을 셀프커스터디 목적으로, 콜드월렛·개인지갑에 이체해 보관할 때 확보되는 최종 실제 수량을 계산합니다.
+</p>
 
         {/* 원화 입력 */}
         <div>
