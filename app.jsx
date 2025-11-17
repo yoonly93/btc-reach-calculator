@@ -1,138 +1,257 @@
 /** @jsx React.createElement */
 
+/*
+  app.jsx
+  - 탭형 거래소 선택 (USDT/KRW: 빗썸/업비트, BTC/USDT: OKX/바이낸스)
+  - 선택 즉시 fetch -> placeholder 갱신
+  - 수동 입력 가능 (입력하면 placeholder 값 대신 사용)
+  - 계산: 빗썸/업비트 기준 USDT, OKX/바이낸스 기준 BTC, 수수료/출금비 반영
+*/
+
+function formatNumber(n) {
+  if (n === null || n === undefined || n === "") return "";
+  const num = Number(n);
+  if (isNaN(num)) return "";
+  return num.toLocaleString(undefined, { maximumFractionDigits: 8 });
+}
+
 function App() {
-  const [krw, setKrw] = React.useState(2000000);
-  const [bithumbRate, setBithumbRate] = React.useState("");
-  const [okxRate, setOkxRate] = React.useState("");
+  // 입력/선택 상태
+  const [krwValue, setKrwValue] = React.useState(2000000);
+
+  const [usdtProvider, setUsdtProvider] = React.useState("bithumb"); // bithumb | upbit
+  const [btcProvider, setBtcProvider] = React.useState("okx"); // okx | binance
+
+  // placeholder (실시간) 값
+  const [usdtRealtime, setUsdtRealtime] = React.useState("");
+  const [btcRealtime, setBtcRealtime] = React.useState("");
+
+  // 사용자가 직접 입력한 값(수동)
+  const [usdtManual, setUsdtManual] = React.useState("");
+  const [btcManual, setBtcManual] = React.useState("");
+
+  // 계산 결과
   const [result, setResult] = React.useState(null);
-  const [loading, setLoading] = React.useState(false);
+  const [loadingUsdt, setLoadingUsdt] = React.useState(false);
+  const [loadingBtc, setLoadingBtc] = React.useState(false);
 
-  const addAmount = (v) => setKrw((prev) => prev + v);
-
-  const fetchRates = async () => {
-    setLoading(true);
+  // -------- fetch helpers --------
+  const fetchUsdt = async (provider) => {
+    setLoadingUsdt(true);
     try {
-      const bithumbRes = await fetch("https://api.bithumb.com/public/ticker/USDT_KRW");
-      const bithumbData = await bithumbRes.json();
-      setBithumbRate(Number(bithumbData.data.closing_price));
-
-      const okxRes = await fetch("https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT");
-      const okxData = await okxRes.json();
-      setOkxRate(Number(okxData.data[0].last));
+      if (provider === "bithumb") {
+        const res = await fetch("https://api.bithumb.com/public/ticker/USDT_KRW");
+        const j = await res.json();
+        const v = j?.data?.closing_price;
+        setUsdtRealtime(v ? Number(v).toFixed(2) : "");
+      } else if (provider === "upbit") {
+        // Upbit KRW-USDT
+        const res = await fetch("https://api.upbit.com/v1/ticker?markets=KRW-USDT");
+        const j = await res.json();
+        const v = j?.[0]?.trade_price;
+        setUsdtRealtime(v ? Number(v).toFixed(2) : "");
+      }
     } catch (e) {
-      alert("환율을 불러오지 못했습니다. 수동 입력해주세요.");
+      console.error("fetchUsdt error", e);
+      setUsdtRealtime("");
+    } finally {
+      setLoadingUsdt(false);
     }
-    setLoading(false);
   };
 
-  const calculate = () => {
-    if (!bithumbRate || !okxRate) {
-      alert("환율을 입력하거나 자동 불러오기를 눌러주세요.");
+  const fetchBtc = async (provider) => {
+    setLoadingBtc(true);
+    try {
+      if (provider === "okx") {
+        const res = await fetch("https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT");
+        const j = await res.json();
+        const v = j?.data?.[0]?.last;
+        setBtcRealtime(v ? Number(v) : "");
+      } else if (provider === "binance") {
+        const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
+        const j = await res.json();
+        const v = j?.price;
+        setBtcRealtime(v ? Number(v) : "");
+      }
+    } catch (e) {
+      console.error("fetchBtc error", e);
+      setBtcRealtime("");
+    } finally {
+      setLoadingBtc(false);
+    }
+  };
+
+  // 즉시 fetch: provider 변경 시
+  React.useEffect(() => {
+    fetchUsdt(usdtProvider);
+    // reset manual USDT input so placeholder is shown unless user types
+    // (we keep manual value untouched; user can overwrite)
+  }, [usdtProvider]);
+
+  React.useEffect(() => {
+    fetchBtc(btcProvider);
+  }, [btcProvider]);
+
+  // 초기 로드
+  React.useEffect(() => {
+    fetchUsdt(usdtProvider);
+    fetchBtc(btcProvider);
+  }, []);
+
+  // 계산 함수 (수수료·출금수수료 적용)
+  const handleCalculate = () => {
+    const usdtPrice = usdtManual ? Number(usdtManual) : Number(usdtRealtime);
+    const btcPrice = btcManual ? Number(btcManual) : Number(btcRealtime);
+
+    if (!usdtPrice || !btcPrice) {
+      alert("환율(USDT/KRW)과 가격(BTC/USDT)을 확인하세요.");
       return;
     }
-    const usdt = krw / bithumbRate * 0.9996;
-    const btc = usdt * 0.999 / okxRate;
-    const finalBtc = Math.max(0, btc - 0.00001);
+
+    const krw = Number(krwValue);
+
+    // 1) KRW -> USDT (빗썸/업비트) : 빗썸 수수료 0.04% 적용 (net = 1 - 0.0004)
+    const usdtBeforeFee = krw / usdtPrice;
+    const usdtAfterExchangeFee = usdtBeforeFee * (1 - 0.0004); // 0.04%
+
+    // 2) USDT -> BTC (OKX/Binance) : 매수 수수료 0.10% 적용 (net 1 - 0.001)
+    const usdtAfterBuyFee = usdtAfterExchangeFee * (1 - 0.001); // 0.1%
+    const btcBought = usdtAfterBuyFee / btcPrice;
+
+    // 3) 출금 수수료
+    const btcFinal = Math.max(0, btcBought - 0.00001);
+
     setResult({
-      usdt: usdt.toFixed(8),
-      btc: btc.toFixed(8),
-      finalBtc: finalBtc.toFixed(8),
+      inputs: {
+        krw,
+        usdtPrice,
+        btcPrice,
+      },
+      steps: {
+        usdtBeforeFee: usdtBeforeFee,
+        usdtAfterExchangeFee,
+        usdtAfterBuyFee,
+        btcBought,
+        btcFinal,
+      },
     });
   };
 
-  const reset = () => {
-    setKrw(2000000);
-    setBithumbRate("");
-    setOkxRate("");
+  const handleReset = () => {
+    setKrwValue(2000000);
+    setUsdtManual("");
+    setBtcManual("");
     setResult(null);
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-xl shadow-md space-y-4">
-      <h2 className="text-2xl font-bold text-center">BTC 도달량 계산기</h2>
+    <div className="max-w-md mx-auto mt-6 space-y-6">
+      {/* 계산기 카드 */}
+      <div className="bg-white p-6 rounded-xl shadow-md space-y-4">
+        <h2 className="text-2xl font-bold text-center">BTC 도달량 계산기</h2>
 
-      {/* KRW 입력 */}
-      <div>
-        <label className="font-semibold text-gray-700">투입 원화</label>
-        <div className="flex gap-2 mt-2">
+        {/* 원화 입력 */}
+        <div>
+          <label className="font-medium text-gray-700">투입 원화 (KRW)</label>
+          <div className="flex gap-2 mt-2">
+            <input
+              type="number"
+              className="flex-1 border rounded px-3 py-2"
+              value={krwValue}
+              onChange={(e) => setKrwValue(Number(e.target.value))}
+            />
+            <button onClick={() => setKrwValue((v) => v + 100000)} className="px-3 py-2 bg-gray-100 rounded">+10만</button>
+            <button onClick={() => setKrwValue((v) => v + 1000000)} className="px-3 py-2 bg-gray-100 rounded">+100만</button>
+            <button onClick={() => setKrwValue((v) => v + 10000000)} className="px-3 py-2 bg-gray-100 rounded">+1000만</button>
+          </div>
+        </div>
+
+        {/* USDT/KRW 탭 */}
+        <div>
+          <label className="font-medium text-gray-700">USDT/KRW</label>
+
+          <div className="mt-2 flex border rounded-lg overflow-hidden">
+            <button
+              className={`flex-1 px-3 py-2 text-center ${usdtProvider === "bithumb" ? "bg-white text-blue-600 font-semibold" : "bg-gray-100 text-gray-700"}`}
+              onClick={() => setUsdtProvider("bithumb")}
+            >
+              빗썸
+            </button>
+            <button
+              className={`flex-1 px-3 py-2 text-center ${usdtProvider === "upbit" ? "bg-white text-blue-600 font-semibold" : "bg-gray-100 text-gray-700"}`}
+              onClick={() => setUsdtProvider("upbit")}
+            >
+              업비트
+            </button>
+          </div>
+
           <input
             type="number"
-            value={krw}
-            onChange={(e) => setKrw(Number(e.target.value))}
-            className="flex-1 border px-3 py-2 rounded-md"
+            className="w-full border rounded px-3 py-2 mt-2"
+            placeholder={loadingUsdt ? "불러오는 중..." : (usdtRealtime ? `${formatNumber(usdtRealtime)} KRW` : "실시간 환율 없음")}
+            value={usdtManual}
+            onChange={(e) => setUsdtManual(e.target.value)}
           />
-          <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(100000)}>+10만</button>
-          <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(1000000)}>+100만</button>
-          <button className="px-3 py-1 bg-gray-200 rounded-md" onClick={() => addAmount(10000000)}>+1000만</button>
+          <div className="text-xs text-gray-500 mt-1">선택: <span className="font-medium">{usdtProvider === "bithumb" ? "빗썸" : "업비트"}</span> · 실시간: {usdtRealtime ? formatNumber(usdtRealtime) + " KRW" : "—"}</div>
         </div>
-      </div>
 
-      {/* 자동 환율 */}
-      <button
-        onClick={fetchRates}
-        className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
-      >
-        실시간 환율 불러오기
-      </button>
+        {/* BTC/USDT 탭 */}
+        <div>
+          <label className="font-medium text-gray-700">BTC/USDT</label>
 
-      {loading && <p className="text-center text-gray-600">환율 불러오는 중...</p>}
+          <div className="mt-2 flex border rounded-lg overflow-hidden">
+            <button
+              className={`flex-1 px-3 py-2 text-center ${btcProvider === "okx" ? "bg-white text-blue-600 font-semibold" : "bg-gray-100 text-gray-700"}`}
+              onClick={() => setBtcProvider("okx")}
+            >
+              OKX
+            </button>
+            <button
+              className={`flex-1 px-3 py-2 text-center ${btcProvider === "binance" ? "bg-white text-blue-600 font-semibold" : "bg-gray-100 text-gray-700"}`}
+              onClick={() => setBtcProvider("binance")}
+            >
+              바이낸스
+            </button>
+          </div>
 
-      {/* 수동 입력 */}
-      <div>
-        <label className="font-semibold text-gray-700">Bithumb USDT/KRW</label>
-        <input
-          type="number"
-          value={bithumbRate}
-          onChange={(e) => setBithumbRate(Number(e.target.value))}
-          className="w-full border px-3 py-2 rounded-md mt-1"
-        />
-      </div>
-
-      <div>
-        <label className="font-semibold text-gray-700">OKX BTC/USDT</label>
-        <input
-          type="number"
-          value={okxRate}
-          onChange={(e) => setOkxRate(Number(e.target.value))}
-          className="w-full border px-3 py-2 rounded-md mt-1"
-        />
-      </div>
-
-      {/* 버튼 */}
-      <div className="space-y-2">
-        <button
-          onClick={calculate}
-          className="w-full py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700"
-        >
-          계산
-        </button>
-        <button
-          onClick={reset}
-          className="w-full py-3 bg-gray-300 text-black rounded-lg font-semibold hover:bg-gray-400"
-        >
-          초기화
-        </button>
-      </div>
-
-      {/* 결과 + 주의사항 */}
-      {result && (
-        <div className="p-4 bg-gray-100 rounded-lg space-y-2">
-          <p>구매 USDT: {result.usdt}</p>
-          <p>OKX 매수 사용 USDT: {result.btc}</p>
-          <p className="font-bold text-lg">
-            최종 도달 BTC: <span className="text-blue-600">{result.finalBtc}</span>
-          </p>
+          <input
+            type="number"
+            className="w-full border rounded px-3 py-2 mt-2"
+            placeholder={loadingBtc ? "불러오는 중..." : (btcRealtime ? `${formatNumber(btcRealtime)} USDT` : "실시간 가격 없음")}
+            value={btcManual}
+            onChange={(e) => setBtcManual(e.target.value)}
+          />
+          <div className="text-xs text-gray-500 mt-1">선택: <span className="font-medium">{btcProvider === "okx" ? "OKX" : "바이낸스"}</span> · 실시간: {btcRealtime ? formatNumber(btcRealtime) + " USDT" : "—"}</div>
         </div>
-      )}
 
-      {/* 주의사항 카드 안 */}
-      <div className="p-4 bg-yellow-100 text-yellow-800 rounded text-sm text-center">
-        ⚠️ 계산한 내역은 저장되지 않습니다. 또한 계산 결과는 참고용이며, 실제 거래와 차이가 있을 수 있습니다.
+        {/* 버튼 */}
+        <div className="space-y-2">
+          <button onClick={handleCalculate} className="w-full py-3 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700">계산</button>
+          <button onClick={handleReset} className="w-full py-3 bg-gray-200 rounded-lg">초기화</button>
+        </div>
+
+        {/* 결과 (상세) */}
+        {result && (
+          <div className="p-3 bg-gray-50 rounded space-y-2">
+            <div>빗썸/업비트 USDT 가격: <b>{formatNumber(result.inputs.usdtPrice)} KRW</b></div>
+            <div>선택 BTC/USDT 가격: <b>{formatNumber(result.inputs.btcPrice)} USDT</b></div>
+            <hr />
+            <div>USDT (환전 전): <b>{formatNumber(result.steps.usdtBeforeFee)}</b> USDT</div>
+            <div>USDT (수수료 적용): <b>{formatNumber(result.steps.usdtAfterExchangeFee)}</b> USDT</div>
+            <div>USDT (OKX/바이낸스 매수 후 사용 가능): <b>{formatNumber(result.steps.usdtAfterBuyFee)}</b> USDT</div>
+            <div>구매된 BTC: <b>{formatNumber(result.steps.btcBought)}</b> BTC</div>
+            <div className="text-lg font-bold text-blue-600">최종 도달 BTC (출금 후): {formatNumber(result.steps.btcFinal)} BTC</div>
+          </div>
+        )}
+
+        {/* 주의사항 (카드 안) */}
+        <div className="mt-3 p-3 bg-yellow-100 text-yellow-800 rounded text-sm text-center">
+          ⚠️ 계산한 내역은 저장되지 않습니다. 또한 계산 결과는 참고용이며, 실제 거래와 차이가 있을 수 있습니다.
+        </div>
       </div>
     </div>
   );
 }
 
-// React 18 createRoot
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
+// 마운트
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
