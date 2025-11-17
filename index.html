@@ -8,61 +8,77 @@
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- React 18 -->
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- React 18 (UMD) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-  <!-- Babel -->
+  <!-- Babel (JSX 변환) -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- 구글광고 -->
+  <!-- Google Ads (example; 실제 광고 사용 시 data-ad-slot 교체) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4826107918413125"
      crossorigin="anonymous"></script>
 
-  <!-- 쿠팡 광고 -->
+  <!-- Coupang Partners script (광고 렌더링용) -->
   <script src="https://ads-partners.coupang.com/g.js"></script>
   <script>
+    // 페이지 로드 후 쿠팡 광고 렌더 호출
     function loadCoupangAd() {
-      new PartnersCoupang.G({
-        id: 942164,
-        trackingCode: "AF1875970",
-        subId: null,
-        template: "carousel",
-        width: "680",
-        height: "140"
-      });
+      try {
+        new PartnersCoupang.G({
+          id: 942164,
+          trackingCode: "AF1875970",
+          subId: null,
+          template: "carousel",
+          width: "680",
+          height: "140"
+        });
+      } catch (e) {
+        console.warn("Coupang ad load failed:", e);
+      }
     }
-    window.onload = loadCoupangAd;
+    // 호출은 DOMContentLoaded 이후에 실행되도록 둠 (script 위치에 따라 안전하게)
+    window.addEventListener('load', loadCoupangAd);
   </script>
+
+  <style>
+    /* 작은 화면에서 쿠팡 배너가 너무 커보이면 제한하기 위한 최소 스타일 */
+    @media (max-width: 720px) {
+      #coupang-ad { transform: scale(0.9); transform-origin: center; }
+    }
+  </style>
 </head>
 
-<body class="bg-gray-100 p-6">
-  <!-- React 계산기 -->
+<body class="bg-gray-50 min-h-screen p-6">
+  <!-- React root -->
   <div id="root"></div>
 
-  <!-- 계산기 아래 영역: 쿠팡 광고 + 안내문 + 구글 광고 -->
-  <div class="mt-6 flex flex-col items-center space-y-4">
-    <!-- 쿠팡 안내문 -->
-    <div class="text-center text-sm text-gray-500">
-      이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+  <!-- 계산기 아래 광고 / 쿠팡 영역 (index에서 배치) -->
+  <div class="max-w-md mx-auto mt-6 flex flex-col items-center space-y-4">
+
+    <!-- 구글 광고 (반응형 예시) -->
+    <div class="w-full flex justify-center">
+      <ins class="adsbygoogle"
+           style="display:block; max-width:680px;"
+           data-ad-client="ca-pub-4826107918413125"
+           data-ad-slot="1234567890"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
     </div>
-
-    <!-- 쿠팡 광고 -->
-    <div id="coupang-ad" class="flex justify-center"></div>
-
-    <!-- 구글 광고 (예시: 반응형) -->
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-4826107918413125"
-         data-ad-slot="1234567890"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
     <script>
       (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
+
+    <!-- 쿠팡 광고 + 안내문: 반드시 계산기 아래에 위치 (가운데 정렬) -->
+    <div class="w-full flex flex-col items-center">
+      <div id="coupang-ad" style="display:inline-block;"></div>
+      <div class="text-center text-sm text-gray-500 mt-2">
+        이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+      </div>
+    </div>
   </div>
 
-  <!-- React 코드 -->
+  <!-- React app (JSX, Babel로 변환됨) -->
   <script type="text/babel" src="app.jsx"></script>
 </body>
 </html>
